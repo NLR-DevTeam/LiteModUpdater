@@ -36,7 +36,6 @@ public class UpdateChecker {
                     continue;
                 }
 
-
                 ModUpdate modUpdate = checkCurseForge(mod);
                 if (modUpdate != null) {
                     System.out.println(Ansi.ansi()
@@ -67,7 +66,9 @@ public class UpdateChecker {
     }
 
     public static ModUpdate checkModrinth(Mod mod) {
+        String sha1 = getModSHA(mod, true);
         String sha512 = getModSHA(mod, false);
+
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new QueryBuilder("https://api.modrinth.com/v2/project/" + mod.link().projectId() + "/version")
@@ -84,9 +85,11 @@ public class UpdateChecker {
             }
 
             JSONObject object = array.getJSONObject(0).getJSONArray("files").getJSONObject(0);
-            String sha512Hash = object.getJSONObject("hashes").getString("sha512");
+            JSONObject hashes = object.getJSONObject("hashes");
+            String sha1Hash = hashes.getString("sha1");
+            String sha512Hash = hashes.getString("sha512");
 
-            if (Objects.equals(sha512, sha512Hash)) {
+            if (Objects.equals(sha512, sha512Hash) || Objects.equals(sha1, sha1Hash)) {
                 return null;
             }
 

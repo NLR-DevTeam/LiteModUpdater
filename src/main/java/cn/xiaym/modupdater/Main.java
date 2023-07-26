@@ -19,9 +19,9 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 public class Main {
-    private static final Path mainDirectory = Paths.get("modupdater");
-    private static final Path profilesDirectory = mainDirectory.resolve("profiles");
-    private static final Path configurationFile = mainDirectory.resolve("config.json");
+    public static final Path mainDirectory = Paths.get("modupdater");
+    public static final Path profilesDirectory = mainDirectory.resolve("profiles");
+    public static final Path configurationFile = mainDirectory.resolve("config.json");
     private static final Scanner scanner = new Scanner(System.in);
     public static JSONObject config;
     public static Profile currentProfile;
@@ -84,12 +84,15 @@ public class Main {
     public static void mainNoArgs() {
         loadProfile();
         System.out.println("Loaded profile: " + config.getString("selected_profile"));
+        String alias = currentProfile.alias();
 
         System.out.println("\n====== Profile Information ======");
         System.out.println(Ansi.ansi()
+                .fgBrightBlue().a("Current profile's alias: ")
+                .fgBright(Ansi.Color.WHITE).a(alias == null ? "<No Alias>" : alias));
+        System.out.println(Ansi.ansi()
                 .fgBrightBlue().a("Current profile's Minecraft version is: ")
-                .fgBright(Ansi.Color.WHITE).a(currentProfile.gameVersion())
-                .reset());
+                .fgBright(Ansi.Color.WHITE).a(currentProfile.gameVersion()));
         System.out.println(Ansi.ansi()
                 .fgBrightBlue().a("Current profile has ")
                 .fgBright(Ansi.Color.WHITE).a(currentProfile.mods().size())
@@ -193,8 +196,11 @@ public class Main {
         // Read game version
         String gameVersion = readLine("Minecraft Version (1.20.1, 22w11a, etc.)> ");
 
+        // Alias
+        String alias = readLine("Alias (Optional)> ", false);
+
         UUID uuid = UUID.randomUUID();
-        Profile profile = new Profile(path, gameVersion, new ArrayList<>());
+        Profile profile = new Profile(path, gameVersion, new ArrayList<>(), alias.isEmpty() ? null : alias);
 
         config.put("selected_profile", uuid.toString());
 
@@ -206,20 +212,30 @@ public class Main {
             return false;
         }
 
-        System.out.println("\nCongratulations! You have created a profile and its mods directory is: " + dir);
+        System.out.println("\nCongratulations! You have created a profile and its uuid is: " + uuid);
         System.out.println("You can run the task \"addLocalMods\" and \"linkMods\" later.");
         return true;
     }
 
     public static String readLine(String prompt) {
-        String line;
-        do {
-            System.out.print(prompt + Ansi.ansi().fgBrightBlue());
-            line = scanner.nextLine();
-            System.out.print(Ansi.ansi().reset());
-        } while (line.isEmpty());
+        return readLine(prompt, true);
+    }
 
-        return line;
+    public static String readLine(String prompt, boolean repeatWhenEmpty) {
+        try {
+            String line;
+            do {
+                System.out.print(prompt + Ansi.ansi().fgBrightBlue());
+                line = scanner.nextLine();
+                System.out.print(Ansi.ansi().reset());
+            } while (repeatWhenEmpty && line.isEmpty());
+
+            return line.trim();
+        } catch (Exception ex) {
+            System.exit(1);
+        }
+
+        return "";
     }
 
     public static String[] stripArgs(String[] raw) {

@@ -8,6 +8,8 @@ import java.util.HashMap;
 
 public class Registry {
     public static final HashMap<String, Command> COMMANDS = new HashMap<>() {{
+        put("help", new CommandHelp());
+
         put("addLocalMods", new CommandAddLocalMods());
         put("autoRemove", new CommandAutoRemove());
         put("listMods", new CommandListMods());

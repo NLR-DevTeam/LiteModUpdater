@@ -10,7 +10,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 
-public record Profile(Path path, String gameVersion, List<Mod> mods) {
+public record Profile(Path path, String gameVersion, List<Mod> mods, String alias) {
     public static Profile deserialize(JSONObject jsonObject) {
         Path path = Paths.get(jsonObject.getString("path"));
         String version = jsonObject.getString("version");
@@ -24,7 +24,9 @@ public record Profile(Path path, String gameVersion, List<Mod> mods) {
             mods.add(Mod.deserialize(obj));
         }
 
-        return new Profile(path, version, mods);
+        String alias = jsonObject.optString("alias", null);
+
+        return new Profile(path, version, mods, alias);
     }
 
     public JSONObject serialize() {
@@ -39,6 +41,10 @@ public record Profile(Path path, String gameVersion, List<Mod> mods) {
             mods.put(mod.serialize());
         }
         jsonObject.put("mods", mods);
+
+        if (alias != null) {
+            jsonObject.put("alias", alias);
+        }
 
         return jsonObject;
     }

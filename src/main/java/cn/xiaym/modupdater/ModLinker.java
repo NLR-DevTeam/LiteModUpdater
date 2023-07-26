@@ -58,7 +58,7 @@ public class ModLinker {
 
         String projId = hit.getString("project_id");
         String title = EmojiParser.removeAllEmojis(hit.getString("title")).trim();
-        double distance = strDiff.distance(trimModName(title), modName);
+        double distance = strDiff.distance(trimModName(title).toLowerCase(), modName.toLowerCase());
 
         if (distance > 0.25) {
             return null;
@@ -80,7 +80,7 @@ public class ModLinker {
 
         String id = String.valueOf(data.getInt("id"));
         String name = EmojiParser.removeAllEmojis(data.getString("name")).trim();
-        double distance = strDiff.distance(trimModName(name), modName);
+        double distance = strDiff.distance(trimModName(name).toLowerCase(), modName.toLowerCase());
 
         if (distance > 0.25) {
             return null;
