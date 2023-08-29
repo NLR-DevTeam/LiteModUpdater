@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import sun.misc.Signal;
 
 import java.io.IOException;
+import java.net.http.HttpClient;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -23,6 +24,7 @@ public class Main {
     public static final Path PROFILES_DIRECTORY = MAIN_DIRECTORY.resolve("profiles");
     public static final Path BACKUP_DIRECTORY = MAIN_DIRECTORY.resolve("backups");
     public static final Path CONFIGURATION_FILE = MAIN_DIRECTORY.resolve("config.json");
+    public static final HttpClient CLIENT = HttpClient.newHttpClient();
     private static final Scanner SCANNER = new Scanner(System.in);
     public static JSONObject config;
     public static Profile currentProfile;
@@ -57,7 +59,7 @@ public class Main {
                         Welcome there!
                         This program is designed for Fabric users to update mods more easily.
                         ** Other mod loaders are not supported yet. **
-                        
+                                                
                         Before starting, creating a profile is required.
                         """);
 
@@ -238,6 +240,7 @@ public class Main {
 
             return line.trim();
         } catch (Exception ex) {
+            System.out.println(Ansi.ansi().reset());
             System.exit(1);
         }
 

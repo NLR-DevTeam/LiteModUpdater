@@ -73,7 +73,7 @@ public class CommandUpdateMods implements Command {
 
                     // Save new mod file
                     InputStream is = conn.getInputStream();
-                    Files.copy(is, savePath);
+                    Files.copy(is, savePath, StandardCopyOption.REPLACE_EXISTING);
 
                     Mod newMod = new Mod(mod.id(), mod.name(), savePath, mod.type(), mod.link(), mod.tags());
                     Main.currentProfile.mods().remove(mod);
