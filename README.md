@@ -6,9 +6,11 @@ A Simple Tool to Update Your Fabric Mods for Minecraft
 # Installation
 - Download the latest release from the [Releases](https://github.com/NLR-DevTeam/LiteModUpdater/releases/) page.
 - Launch the `Terminal` and type `java -jar LiteModUpdater-X.X.X.jar` to start the tool.
-
+  
   **Warning:** Make sure to replace the filename with the actual name of the file you downloaded. You’ll need Java 17 to run this tool.
-- When you run the tool for the first time, enter the directory where your mods are located to create a profile.
+- When you run the tool for the first time, enter the directory where your mods are located and the version of your game to create a profile.
+- Enter an optional alias for the profile, then go ahead and create it. Once created, you’ll receive a unique UUID for the profile.
+- Then you can execute the tasks `addLocalMods` or `linkMods` whenever you’re ready.
 
 # Usage
 - Coming soon ...
