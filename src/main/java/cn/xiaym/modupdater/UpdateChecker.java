@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class UpdateChecker {
-    private static final HttpClient client = HttpClient.newHttpClient();
+    private static final HttpClient CLIENT = HttpClient.newHttpClient();
 
     public static List<ModUpdate> checkUpdates() {
         ArrayList<ModUpdate> updates = new ArrayList<>();
@@ -32,7 +32,7 @@ public class UpdateChecker {
             }
 
             if (mod.link() instanceof CurseForgeLink) {
-                if (ModLinker.curseForgeAPIKey.isEmpty()) {
+                if (ModLinker.CURSEFORGE_API_KEY.isEmpty()) {
                     continue;
                 }
 
@@ -77,7 +77,7 @@ public class UpdateChecker {
                             .build())
                     .header("Accept", "application/json")
                     .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             JSONArray array = new JSONArray(response.body());
 
             if (array.length() == 0) {
@@ -103,7 +103,7 @@ public class UpdateChecker {
     }
 
     public static ModUpdate checkCurseForge(Mod mod) {
-        if (ModLinker.curseForgeAPIKey.isEmpty()) {
+        if (ModLinker.CURSEFORGE_API_KEY.isEmpty()) {
             System.err.println("CURSEFORGE | API Key is not set.");
             return null;
         }
@@ -117,9 +117,9 @@ public class UpdateChecker {
                             .addQuery("pageSize", 1)
                             .build())
                     .header("Accept", "application/json")
-                    .header("x-api-key", ModLinker.curseForgeAPIKey)
+                    .header("x-api-key", ModLinker.CURSEFORGE_API_KEY)
                     .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             JSONArray array = new JSONObject(response.body()).getJSONArray("data");
 
             if (array.length() == 0) {

@@ -10,16 +10,16 @@ import java.util.ArrayList;
 public class CommandLinkMods implements Command {
     @Override
     public void onCommand(String[] args) {
-        if (ModLinker.curseForgeAPIKey.isEmpty()) {
+        if (ModLinker.CURSEFORGE_API_KEY.isEmpty()) {
             System.out.println(Ansi.ansi().fgBrightYellow().a("""
                     \nWarning! You haven't set the CurseForge API Key!
                     Linking through CurseForge won't work unless you set it in the configuration file.
                     """).reset());
         }
 
-        new ArrayList<>(Main.currentProfile.mods()).forEach(mod -> {
+        for (Mod mod : new ArrayList<>(Main.currentProfile.mods())) {
             if (mod.type() == Mod.Type.ONLINE) {
-                return;
+                continue;
             }
 
             try {
@@ -34,6 +34,6 @@ public class CommandLinkMods implements Command {
             }
 
             Main.saveCurrentProfile();
-        });
+        }
     }
 }

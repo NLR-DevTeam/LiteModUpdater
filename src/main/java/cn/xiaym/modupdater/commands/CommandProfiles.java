@@ -51,7 +51,7 @@ public class CommandProfiles implements Command {
     public static Profile checkProfileOnlyArgs(String[] args, String cmd, boolean fallbackCurrent) {
         if (args.length == 1) {
             if (fallbackCurrent) {
-                return deserializeProfile(Main.profilesDirectory
+                return deserializeProfile(Main.PROFILES_DIRECTORY
                         .resolve(Main.config.getString("selected_profile") + ".json"));
             }
 
@@ -60,7 +60,7 @@ public class CommandProfiles implements Command {
         }
 
         String profile = args[1];
-        Profile prof = deserializeProfile(Main.profilesDirectory.resolve(profile + ".json"));
+        Profile prof = deserializeProfile(Main.PROFILES_DIRECTORY.resolve(profile + ".json"));
         if (prof == null) {
             System.err.println("That profile (" + profile + ") is invalid.");
             return null;
@@ -76,7 +76,7 @@ public class CommandProfiles implements Command {
             return;
         }
 
-        switch (args[0]) {
+        switch (args[0].toLowerCase()) {
             case "create", "new" -> Main.createProfileAsking();
 
             case "remove", "rm" -> {
@@ -84,7 +84,7 @@ public class CommandProfiles implements Command {
                     return;
                 }
 
-                Path path = Main.profilesDirectory.resolve(args[1] + ".json");
+                Path path = Main.PROFILES_DIRECTORY.resolve(args[1] + ".json");
                 try {
                     Files.delete(path);
                     System.out.println("Removed successfully.");
@@ -116,8 +116,8 @@ public class CommandProfiles implements Command {
                 }
 
                 UUID uuid = UUID.randomUUID();
-                Path oldPath = Main.profilesDirectory.resolve(args[1] + ".json");
-                Path newPath = Main.profilesDirectory.resolve(uuid + ".json");
+                Path oldPath = Main.PROFILES_DIRECTORY.resolve(args[1] + ".json");
+                Path newPath = Main.PROFILES_DIRECTORY.resolve(uuid + ".json");
 
                 try {
                     Files.copy(oldPath, newPath, StandardCopyOption.REPLACE_EXISTING);
@@ -146,7 +146,7 @@ public class CommandProfiles implements Command {
                 String selected = Main.config.getString("selected_profile");
                 System.out.println("Listing created profiles...\n");
 
-                try (Stream<Path> listed = Files.list(Main.profilesDirectory)) {
+                try (Stream<Path> listed = Files.list(Main.PROFILES_DIRECTORY)) {
                     List<Path> list = listed.toList();
                     for (Path path : list) {
                         String id = getIdByFile(path);
@@ -181,7 +181,7 @@ public class CommandProfiles implements Command {
                 }
 
                 String profileName = args[1];
-                Path path = Main.profilesDirectory.resolve(profileName + ".json");
+                Path path = Main.PROFILES_DIRECTORY.resolve(profileName + ".json");
                 Profile profile = deserializeProfile(path);
                 if (profile == null) {
                     System.err.println("That profile (" + profileName + ") is invalid.");

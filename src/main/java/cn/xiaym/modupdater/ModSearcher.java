@@ -9,57 +9,47 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class ModSearcher {
-    private static final HttpClient client = HttpClient.newHttpClient();
+    private static final HttpClient CLIENT = HttpClient.newHttpClient();
 
-    public static JSONObject searchModrinth(String modName) {
+    public static JSONArray searchModrinth(String modName, int limit) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new QueryBuilder("https://api.modrinth.com/v2/search")
-                            .addQuery("limit", 1)
+                            .addQuery("limit", limit)
                             .addQuery("query", modName)
                             .addQuery("facets", "[[\"categories:fabric\"],[\"project_type:mod\"]]")
                             .build())
                     .header("Accept", "application/json")
                     .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
-            JSONArray array = new JSONObject(response.body()).getJSONArray("hits");
-            if (array.length() == 0) {
-                return null;
-            }
-
-            return array.getJSONObject(0);
+            return new JSONObject(response.body()).getJSONArray("hits");
         } catch (Exception ignored) {
             // Do nothing
         }
 
-        return null;
+        return new JSONArray();
     }
 
-    public static JSONObject searchCurseForge(String modName, String apiKey) {
+    public static JSONArray searchCurseForge(String modName, String apiKey, int limit) {
         try {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new QueryBuilder("https://api.curseforge.com/v1/mods/search")
                             .addQuery("gameId", 432)
-                            .addQuery("pageSize", 1)
+                            .addQuery("pageSize", limit)
                             .addQuery("searchFilter", modName)
                             .addQuery("modLoaderType", "Fabric")
                             .build())
                     .header("Accept", "application/json")
                     .header("x-api-key", apiKey)
                     .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
 
-            JSONArray array = new JSONObject(response.body()).getJSONArray("data");
-            if (array.length() == 0) {
-                return null;
-            }
-
-            return array.getJSONObject(0);
+            return new JSONObject(response.body()).getJSONArray("data");
         } catch (Exception ignored) {
             // Do nothing
         }
 
-        return null;
+        return new JSONArray();
     }
 }

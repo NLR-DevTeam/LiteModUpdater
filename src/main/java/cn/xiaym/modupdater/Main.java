@@ -19,10 +19,11 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 public class Main {
-    public static final Path mainDirectory = Paths.get("modupdater");
-    public static final Path profilesDirectory = mainDirectory.resolve("profiles");
-    public static final Path configurationFile = mainDirectory.resolve("config.json");
-    private static final Scanner scanner = new Scanner(System.in);
+    public static final Path MAIN_DIRECTORY = Paths.get("modupdater");
+    public static final Path PROFILES_DIRECTORY = MAIN_DIRECTORY.resolve("profiles");
+    public static final Path BACKUP_DIRECTORY = MAIN_DIRECTORY.resolve("backups");
+    public static final Path CONFIGURATION_FILE = MAIN_DIRECTORY.resolve("config.json");
+    private static final Scanner SCANNER = new Scanner(System.in);
     public static JSONObject config;
     public static Profile currentProfile;
 
@@ -49,14 +50,14 @@ public class Main {
             System.exit(1);
         }
 
-        try (Stream<Path> listed = Files.list(profilesDirectory)) {
+        try (Stream<Path> listed = Files.list(PROFILES_DIRECTORY)) {
             if (listed.findAny().isEmpty()) {
                 // First launch
                 System.out.println("""
                         Welcome there!
                         This program is designed for Fabric users to update mods more easily.
                         ** Other mod loaders are not supported yet. **
-                                                
+                        
                         Before starting, creating a profile is required.
                         """);
 
@@ -103,7 +104,7 @@ public class Main {
     }
 
     public static void mainWithArgs(String[] args) {
-        String commandName = args[0];
+        String commandName = args[0].toLowerCase();
         if (!commandName.equals("profiles")) {
             loadProfile();
         }
@@ -121,34 +122,39 @@ public class Main {
         long diff = System.currentTimeMillis() - timer;
         System.out.println(Ansi.ansi()
                 .fgBright(Ansi.Color.GREEN).a("Task or Subcommand ")
-                .fgBright(Ansi.Color.WHITE).bold().a(commandName)
+                .fgBright(Ansi.Color.WHITE).bold().a(args[0])
                 .reset()
                 .fgBright(Ansi.Color.GREEN).a(" FINISHED in " + diff / 1000 + "s " + diff % 1000 + "ms")
                 .reset());
     }
 
     public static void initDataFolders() throws IOException {
-        if (Files.notExists(profilesDirectory)) {
-            Files.createDirectories(profilesDirectory);
+        if (Files.notExists(PROFILES_DIRECTORY)) {
+            Files.createDirectories(PROFILES_DIRECTORY);
         }
 
-        if (Files.notExists(configurationFile)) {
+        if (Files.notExists(BACKUP_DIRECTORY)) {
+            Files.createDirectory(BACKUP_DIRECTORY);
+        }
+
+        if (Files.notExists(CONFIGURATION_FILE)) {
             // Write default config
             JSONObject defaultConfig = new JSONObject();
             defaultConfig.put(Registry.KEY_CURSEFORGE_APIKEY, "");
+            defaultConfig.put("auto_backup_mods", true);
 
-            Files.writeString(configurationFile, JSONFormatter.format(defaultConfig.toString(), 4), StandardOpenOption.CREATE);
+            Files.writeString(CONFIGURATION_FILE, JSONFormatter.format(defaultConfig.toString(), 4), StandardOpenOption.CREATE);
         }
     }
 
     public static void reloadConfig() throws IOException {
-        String data = Files.readString(configurationFile);
+        String data = Files.readString(CONFIGURATION_FILE);
         config = new JSONObject(data);
     }
 
     public static void saveConfig() {
         try {
-            Files.writeString(configurationFile, JSONFormatter.format(config.toString(), 4));
+            Files.writeString(CONFIGURATION_FILE, JSONFormatter.format(config.toString(), 4));
         } catch (IOException e) {
             System.err.println("ERROR: Unable to save the configuration file;");
             System.err.println("ERROR: " + e.getMessage());
@@ -157,7 +163,7 @@ public class Main {
 
     public static void loadProfile() {
         try {
-            String data = Files.readString(profilesDirectory.resolve(config.getString("selected_profile") + ".json"));
+            String data = Files.readString(PROFILES_DIRECTORY.resolve(config.getString("selected_profile") + ".json"));
             currentProfile = Profile.deserialize(new JSONObject(data));
         } catch (Exception e) {
             System.err.println("FATAL: An unexpected error occurred while reading the profile;");
@@ -169,7 +175,7 @@ public class Main {
 
     public static void saveCurrentProfile() {
         try {
-            Path path = profilesDirectory.resolve(config.getString("selected_profile") + ".json");
+            Path path = PROFILES_DIRECTORY.resolve(config.getString("selected_profile") + ".json");
             Files.writeString(path, currentProfile.serialize().toString());
         } catch (Exception e) {
             System.err.println("ERROR: Unable to save the profile file;");
@@ -205,7 +211,7 @@ public class Main {
         config.put("selected_profile", uuid.toString());
 
         try {
-            Files.writeString(profilesDirectory.resolve(uuid + ".json"), profile.serialize().toString(), StandardOpenOption.CREATE);
+            Files.writeString(PROFILES_DIRECTORY.resolve(uuid + ".json"), profile.serialize().toString(), StandardOpenOption.CREATE);
         } catch (IOException e) {
             System.err.println("FATAL: Unable to create profile file at modupdater/profiles/" + uuid + ".json;");
             System.err.println("FATAL: " + e.getMessage());
@@ -226,7 +232,7 @@ public class Main {
             String line;
             do {
                 System.out.print(prompt + Ansi.ansi().fgBrightBlue());
-                line = scanner.nextLine();
+                line = SCANNER.nextLine();
                 System.out.print(Ansi.ansi().reset());
             } while (repeatWhenEmpty && line.isEmpty());
 

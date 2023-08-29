@@ -7,11 +7,12 @@ import cn.xiaym.modupdater.data.link.ModrinthLink;
 import com.vdurmont.emoji.EmojiParser;
 import info.debatty.java.stringsimilarity.Cosine;
 import org.fusesource.jansi.Ansi;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class ModLinker {
-    public static final String curseForgeAPIKey = Main.config.optString(Registry.KEY_CURSEFORGE_APIKEY, "");
-    private static final Cosine strDiff = new Cosine();
+    public static final String CURSEFORGE_API_KEY = Main.config.optString(Registry.KEY_CURSEFORGE_APIKEY, "");
+    public static final Cosine STR_DIFF = new Cosine();
 
     public static Mod tryLink(Mod mod) {
         String modName = trimModName(mod.name());
@@ -28,7 +29,7 @@ public class ModLinker {
             return mod.modifyLink(new ModrinthLink(modrinthProj));
         }
 
-        if (!curseForgeAPIKey.isEmpty()) {
+        if (!CURSEFORGE_API_KEY.isEmpty()) {
             String curseForgeProj = tryLinkCurseForge(modName);
             System.out.println(curseForgeProj == null ?
                     Ansi.ansi().fgBrightRed().a("Link FAILED through CurseForge.").reset() :
@@ -39,11 +40,10 @@ public class ModLinker {
             }
         }
 
-        ModLink modLink = Registry.FALLBACK_LINKS.getOrDefault(modName, null);
+        ModLink modLink = Registry.FALLBACK_LINKS.getOrDefault(mod.id(), null);
         if (modLink != null) {
-            System.out.println(Ansi.ansi().fgBrightYellow().a("Using internal fallback link: " +
-                    (modLink instanceof ModrinthLink ? "Modrinth" : "CurseForge")
-                    + "/" + modLink.projectId()).reset());
+            System.out.println(Ansi.ansi()
+                    .fgBrightYellow().a("Using internal fallback link: " + modLink).reset());
             return mod.modifyLink(modLink);
         }
 
@@ -51,14 +51,15 @@ public class ModLinker {
     }
 
     public static String tryLinkModrinth(String modName) {
-        JSONObject hit = ModSearcher.searchModrinth(modName);
-        if (hit == null) {
+        JSONArray array = ModSearcher.searchModrinth(modName, 1);
+        if (array.length() == 0) {
             return null;
         }
 
+        JSONObject hit = array.getJSONObject(0);
         String projId = hit.getString("project_id");
         String title = EmojiParser.removeAllEmojis(hit.getString("title")).trim();
-        double distance = strDiff.distance(trimModName(title).toLowerCase(), modName.toLowerCase());
+        double distance = STR_DIFF.distance(trimModName(title).toLowerCase(), modName.toLowerCase());
 
         if (distance > 0.25) {
             return null;
@@ -68,19 +69,20 @@ public class ModLinker {
     }
 
     public static String tryLinkCurseForge(String modName) {
-        if (curseForgeAPIKey.isEmpty()) {
+        if (CURSEFORGE_API_KEY.isEmpty()) {
             System.err.println("CURSEFORGE | API Key is not set.");
             return null;
         }
 
-        JSONObject data = ModSearcher.searchCurseForge(modName, curseForgeAPIKey);
-        if (data == null) {
+        JSONArray array = ModSearcher.searchCurseForge(modName, CURSEFORGE_API_KEY, 1);
+        if (array.length() == 0) {
             return null;
         }
 
+        JSONObject data = array.getJSONObject(0);
         String id = String.valueOf(data.getInt("id"));
         String name = EmojiParser.removeAllEmojis(data.getString("name")).trim();
-        double distance = strDiff.distance(trimModName(name).toLowerCase(), modName.toLowerCase());
+        double distance = STR_DIFF.distance(trimModName(name).toLowerCase(), modName.toLowerCase());
 
         if (distance > 0.25) {
             return null;

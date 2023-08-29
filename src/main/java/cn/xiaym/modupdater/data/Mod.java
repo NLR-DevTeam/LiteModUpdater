@@ -59,7 +59,9 @@ public record Mod(String id, String name, Path path, Type type, ModLink link, Se
 
         if (tags.size() > 0) {
             JSONArray arr = new JSONArray();
-            tags.forEach(tag -> arr.put(tag.name()));
+            for (Tag tag : tags) {
+                arr.put(tag.name());
+            }
 
             jsonObject.put("tags", arr);
         }
