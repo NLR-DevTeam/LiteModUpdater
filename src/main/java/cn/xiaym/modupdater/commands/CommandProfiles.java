@@ -16,7 +16,7 @@ public class CommandProfiles implements Command {
         System.out.println("""
                 Showing the help for subcommand: profiles
                 Usage: profiles <operation> [args]
-                                
+                
                 Available operations:
                  create\t\t - Create a profile by following a guide
                  remove <uuid>\t - Remove a profile
@@ -170,12 +170,12 @@ public class CommandProfiles implements Command {
                     System.out.println("""
                             Modifying a profile's config
                             Usage: modify <uuid> <type> <value>
-                                                        
+                            
                             Available types:
                             ver - Minecraft Version
                             dir - Mods Directory
                             alias - Profile alias
-                                                        
+                            
                             If your value argument contains space, you should surround it with quotes.""");
                     return;
                 }

@@ -59,7 +59,7 @@ public class Main {
                         Welcome there!
                         This program is designed for Fabric users to update mods more easily.
                         ** Other mod loaders are not supported yet. **
-                                                
+                        
                         Before starting, creating a profile is required.
                         """);
 
@@ -202,7 +202,7 @@ public class Main {
         }
 
         // Read game version
-        String gameVersion = readLine("Minecraft Version (1.20.1, 22w11a, etc.)> ");
+        String gameVersion = readLine("Minecraft Version (1.21, 1.20.6, 22w11a, etc.)> ");
 
         // Alias
         String alias = readLine("Alias (Optional)> ", false);

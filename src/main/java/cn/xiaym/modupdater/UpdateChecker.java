@@ -5,6 +5,7 @@ import cn.xiaym.modupdater.data.ModUpdate;
 import cn.xiaym.modupdater.data.link.CurseForgeLink;
 import cn.xiaym.modupdater.data.link.ModrinthLink;
 import cn.xiaym.modupdater.utils.QueryBuilder;
+import cn.xiaym.modupdater.utils.Retryer;
 import org.fusesource.jansi.Ansi;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -33,7 +34,7 @@ public class UpdateChecker {
                     continue;
                 }
 
-                ModUpdate modUpdate = checkCurseForge(mod);
+                ModUpdate modUpdate = Retryer.executeOrNull(() -> checkCurseForge(mod), 5);
                 if (modUpdate != null) {
                     System.out.println(Ansi.ansi()
                             .a("* Detected a update for mod: ")
@@ -46,7 +47,7 @@ public class UpdateChecker {
             }
 
             if (mod.link() instanceof ModrinthLink) {
-                ModUpdate modUpdate = checkModrinth(mod);
+                ModUpdate modUpdate = Retryer.executeOrNull(() -> checkModrinth(mod), 5);
                 if (modUpdate != null) {
                     System.out.println(Ansi.ansi()
                             .a("* Detected a update for mod: ")
@@ -77,7 +78,7 @@ public class UpdateChecker {
             HttpResponse<String> response = Main.CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             JSONArray array = new JSONArray(response.body());
 
-            if (array.length() == 0) {
+            if (array.isEmpty()) {
                 return null;
             }
 
@@ -119,7 +120,7 @@ public class UpdateChecker {
             HttpResponse<String> response = Main.CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             JSONArray array = new JSONObject(response.body()).getJSONArray("data");
 
-            if (array.length() == 0) {
+            if (array.isEmpty()) {
                 return null;
             }
 

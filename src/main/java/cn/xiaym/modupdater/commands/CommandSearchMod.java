@@ -28,11 +28,11 @@ public class CommandSearchMod implements Command {
         System.out.println("""
                 Showing the help for subcommand: searchMod
                 Usage: searchMod <platform> <mod name>
-                                
+                
                 Available platforms:
                  modrinth, m\t - Modrinth
                  curseforge, c\t - CurseForge
-                                
+                
                 If your mod name argument contains space, you should surround it with quotes.""");
     }
 
@@ -58,7 +58,7 @@ public class CommandSearchMod implements Command {
     public static void showCategories(List<String> categoryNames) {
         StringBuilder stringBuilder = new StringBuilder();
         for (String categoryName : categoryNames) {
-            if (stringBuilder.length() > 0) {
+            if (!stringBuilder.isEmpty()) {
                 stringBuilder.append(" ");
             }
 
@@ -256,7 +256,7 @@ public class CommandSearchMod implements Command {
                 System.out.println("Now searching on Modrinth: " + args[1]);
 
                 JSONArray data = ModSearcher.searchModrinth(args[1], 10);
-                if (data.length() == 0) {
+                if (data.isEmpty()) {
                     System.out.println("No mods were found.");
                     return;
                 }
@@ -284,7 +284,7 @@ public class CommandSearchMod implements Command {
                 System.out.println("Now searching on CurseForge: " + args[1]);
 
                 JSONArray data = ModSearcher.searchCurseForge(args[1], ModLinker.CURSEFORGE_API_KEY, 10);
-                if (data.length() == 0) {
+                if (data.isEmpty()) {
                     System.out.println("No mods were found, sometimes this is a bug of curseforge, please try again later.");
                     return;
                 }

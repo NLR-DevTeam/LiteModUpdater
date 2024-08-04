@@ -24,7 +24,7 @@ public class JSONFormatter {
                         sb.append(" ".repeat(currentIndent));
                     }
 
-                    while (isWhitespace(json[i + 1])) {
+                    while (Character.isWhitespace(json[i + 1])) {
                         i++;
                     }
 
@@ -57,7 +57,7 @@ public class JSONFormatter {
                         beginning = false;
                     }
 
-                    if (isWhitespace(token)) {
+                    if (Character.isWhitespace(token)) {
                         continue;
                     }
 
@@ -67,16 +67,6 @@ public class JSONFormatter {
         }
 
         return sb.toString();
-    }
-
-    /**
-     * Faster isWhitespace, uses Character.isWhitespace as a backup
-     *
-     * @param ch The character to determine
-     * @return Is ch a whitespace character
-     */
-    public static boolean isWhitespace(char ch) {
-        return ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t' || Character.isWhitespace(ch);
     }
 }
 

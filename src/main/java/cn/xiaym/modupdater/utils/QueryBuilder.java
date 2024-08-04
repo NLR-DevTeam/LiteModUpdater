@@ -21,7 +21,7 @@ public class QueryBuilder {
     }
 
     public QueryBuilder addQuery(String key, Object value) {
-        if (query.length() != 0) {
+        if (!query.isEmpty()) {
             query.append("&");
         }
 

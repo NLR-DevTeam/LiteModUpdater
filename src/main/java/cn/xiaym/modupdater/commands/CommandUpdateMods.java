@@ -4,6 +4,7 @@ import cn.xiaym.modupdater.Main;
 import cn.xiaym.modupdater.UpdateChecker;
 import cn.xiaym.modupdater.data.Mod;
 import cn.xiaym.modupdater.data.ModUpdate;
+import cn.xiaym.modupdater.utils.Retryer;
 import org.fusesource.jansi.Ansi;
 
 import java.io.IOException;
@@ -14,19 +15,41 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 public class CommandUpdateMods implements Command {
+    public static String getValidPath(String defaultPath, String... tries) {
+        for (String pathStr : tries) {
+            if (pathStr == null) {
+                continue;
+            }
+
+            try {
+                Path path = Paths.get(pathStr);
+                if (Files.notExists(path)) {
+                    Files.createDirectory(path);
+                    Files.delete(path);
+                }
+
+                return pathStr;
+            } catch (Exception ignored) {
+                // Do nothing
+            }
+        }
+
+        return defaultPath;
+    }
+
     @Override
     public void onCommand(String[] args) {
         System.out.println("Please wait while we're checking mods' updates...");
         List<ModUpdate> updates = UpdateChecker.checkUpdates();
-        System.out.println(updates.size() > 0 ?
-                "Totally detected " + updates.size() + " mods' updates." :
-                "No updates were found.");
+        System.out.println(updates.isEmpty() ? "No updates were found." :
+                "Totally detected " + updates.size() + " mods' updates.");
 
-        if (updates.size() > 0) {
+        if (!updates.isEmpty()) {
             System.out.println("\nDownloading started");
             for (ModUpdate update : updates) {
                 Mod mod = update.mod();
@@ -38,11 +61,7 @@ public class CommandUpdateMods implements Command {
                 if (Main.config.optBoolean("auto_backup_mods") && Files.exists(mod.path())) {
                     try {
                         String alias = Main.currentProfile.alias();
-                        if (!isFileNameValid(alias)) {
-                            alias = null;
-                        }
-
-                        Path profileDir = Main.BACKUP_DIRECTORY.resolve(alias == null ? Main.currentProfile.gameVersion() : alias);
+                        Path profileDir = Main.BACKUP_DIRECTORY.resolve(getValidPath("FALLBACK", alias, Main.currentProfile.gameVersion()));
                         if (Files.notExists(profileDir)) {
                             Files.createDirectories(profileDir);
                         }
@@ -65,34 +84,32 @@ public class CommandUpdateMods implements Command {
                 }
 
                 try {
-                    HttpURLConnection conn = (HttpURLConnection) URI.create(update.updateURL()).toURL().openConnection();
-                    conn.connect();
+                    Retryer.execute(() -> {
+                        HttpURLConnection conn = (HttpURLConnection) URI.create(update.updateURL()).toURL().openConnection();
+                        conn.connect();
 
-                    // Delete old mod file
-                    Files.deleteIfExists(oldPath);
+                        // Delete old mod file
+                        Files.deleteIfExists(oldPath);
 
-                    // Save new mod file
-                    InputStream is = conn.getInputStream();
-                    Files.copy(is, savePath, StandardCopyOption.REPLACE_EXISTING);
+                        // Save new mod file
+                        InputStream is = conn.getInputStream();
+                        Files.copy(is, savePath, StandardCopyOption.REPLACE_EXISTING);
 
-                    Mod newMod = new Mod(mod.id(), mod.name(), savePath, mod.type(), mod.link(), mod.tags());
-                    Main.currentProfile.mods().remove(mod);
-                    Main.currentProfile.mods().add(newMod);
-                    Main.saveCurrentProfile();
+                        Mod newMod = new Mod(mod.id(), mod.name(), savePath, mod.type(), mod.link(), mod.tags());
+                        Main.currentProfile.mods().remove(mod);
+                        Main.currentProfile.mods().add(newMod);
+                        Main.saveCurrentProfile();
 
-                    System.out.println(Ansi.ansi()
-                            .a("* Mod ")
-                            .fgBrightCyan().a(mod.name()).reset()
-                            .a(" downloaded successfully."));
-                } catch (Exception ex) {
+                        System.out.println(Ansi.ansi()
+                                .a("* Mod ")
+                                .fgBrightCyan().a(mod.name()).reset()
+                                .a(" downloaded successfully."));
+                    }, 5);
+                } catch (Throwable th) {
                     System.err.println("Error: An exception was thrown while downloading update for mod: " + mod.name() + ";");
-                    System.err.println("Error: " + ex.getMessage());
+                    System.err.println("Error: " + th.getMessage());
                 }
             }
         }
-    }
-
-    public static boolean isFileNameValid(String fileName) {
-        return fileName.length() <= 255 && fileName.matches("[^\\s\\\\/:*?\"<>|](\\x20|[^\\s\\\\/:*?\"<>|])*[^\\s\\\\/:*?\"<>|.]$");
     }
 }

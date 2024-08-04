@@ -36,10 +36,12 @@ public record Profile(Path path, String gameVersion, List<Mod> mods, String alia
 
         ensureSingleModInstance();
         sortMods();
+
         JSONArray mods = new JSONArray();
         for (Mod mod : this.mods) {
             mods.put(mod.serialize());
         }
+
         jsonObject.put("mods", mods);
 
         if (alias != null) {
